@@ -10,7 +10,7 @@ const App = () => {
   const [books, setBooks] = useState([])
   const [selectedBook, setSelectedBook] = useState(null)
   const [showPanel, setShowPanel] = useState(false)
-  const [filteredBooks, setFilteredBooks] = useState([])
+  // const [filteredBooks, setFilteredBooks] = useState([])
 
   useEffect(() => {
     const fetchData = async () => {
@@ -20,8 +20,7 @@ const App = () => {
 
         const books = await response.json()
         console.log(`our json-ified response: `, books)
-        setBooks(books)
-        setFilteredBooks(books)
+        setBooks(books.map((book) => ({ ...book, isFaved: false })))
       } catch (errors) {
         console.log(errors)
       }
@@ -43,18 +42,28 @@ const App = () => {
     const stringSearch = (bookAttribute, searchTerm) =>
       bookAttribute.toLowerCase().includes(searchTerm.toLowerCase())
 
-    if (!searchTerm) {
-      setFilteredBooks(books)
-    } else {
-      setFilteredBooks(
-        books.filter(
-          (book) => stringSearch(book.title, searchTerm) || stringSearch(book.author, searchTerm)
-        )
-      )
-    }
+    setBooks(
+      books.map((book) => {
+        const isFiltered = !searchTerm
+          ? false
+          : stringSearch(book.title, searchTerm) || stringSearch(book.author, searchTerm)
+          ? false
+          : true
+        return { ...book, isFiltered: isFiltered }
+      })
+    )
   }
 
-  const hasFiltered = filteredBooks.length !== books.length
+  const toggleFave = (bookId) => {
+    setBooks((books) => {
+      const updatedBooks = books.map((book) =>
+        book.id === bookId ? { ...book, isFaved: !book.isFaved } : book
+      )
+    })
+  }
+
+  const hasFiltered = books.some((book) => book.isFiltered)
+  const displayBooks = hasFiltered ? books.filter((book) => !book.isFiltered) : books
 
   return (
     <>
@@ -63,13 +72,20 @@ const App = () => {
         <Search filterBooks={filterBooks} />
       </Header>
       <BooksContainer
-        books={filteredBooks}
+        books={displayBooks}
         pickBook={pickBook}
         isPanelOpen={showPanel}
         title={hasFiltered ? 'Search results' : 'All books'}
       />
       <Transition in={showPanel} timeout={300}>
-        {(state) => <DetailPanel book={selectedBook} closePanel={closePanel} state={state} />}
+        {(state) => (
+          <DetailPanel
+            book={selectedBook}
+            closePanel={closePanel}
+            state={state}
+            toggleFave={toggleFave}
+          />
+        )}
       </Transition>
     </>
   )
