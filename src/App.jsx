@@ -8,8 +8,10 @@ import { Transition } from 'react-transition-group'
 
 const App = () => {
   const [books, setBooks] = useState([])
-  const [selectedBook, setSelectedBook] = useState(null)
+  // const [selectedBook, setSelectedBook] = useState(null)
   const [showPanel, setShowPanel] = useState(false)
+  const [showFaves, setShowFaves] = useState(false)
+  const faveBookIds = JSON.parse(localStorage.getItem('faveBookIds') || '[]')
   // const [filteredBooks, setFilteredBooks] = useState([])
 
   useEffect(() => {
@@ -20,7 +22,9 @@ const App = () => {
 
         const books = await response.json()
         console.log(`our json-ified response: `, books)
-        setBooks(books.map((book) => ({ ...book, isFaved: false })))
+        setBooks(
+          books.map((book) => ({ ...book, isFaved: faveBookIds.includes(book.id) ? true : false }))
+        )
       } catch (errors) {
         console.log(errors)
       }
@@ -29,8 +33,9 @@ const App = () => {
     fetchData()
   }, [])
 
-  const pickBook = (book) => {
-    setSelectedBook(book)
+  const pickBook = (bookId) => {
+    // setSelectedBook(book)
+    setBooks((books) => books.map((book) => ({ ...book, isPicked: book.id === bookId })))
     setShowPanel(true)
   }
 
@@ -59,17 +64,37 @@ const App = () => {
       const updatedBooks = books.map((book) =>
         book.id === bookId ? { ...book, isFaved: !book.isFaved } : book
       )
+
+      localStorage.setItem(
+        'faveBookIds',
+        JSON.stringify(updatedBooks.filter(({ isFaved }) => isFaved).map(({ id }) => id))
+      )
+      return updatedBooks
     })
   }
 
+  const toggleShowFaves = () => {
+    setShowFaves((showFaves) => !showFaves)
+  }
+
   const hasFiltered = books.some((book) => book.isFiltered)
-  const displayBooks = hasFiltered ? books.filter((book) => !book.isFiltered) : books
+  const displayBooks = hasFiltered
+    ? books.filter((book) => !book.isFiltered)
+    : showFaves
+    ? books.filter((book) => book.isFaved)
+    : books
+  const selectedBook = books.find((book) => book.isPicked)
 
   return (
     <>
       <GlobalStyle />
       <Header>
-        <Search filterBooks={filterBooks} />
+        <Search
+          filterBooks={filterBooks}
+          showFaves={showFaves}
+          toggleShowFaves={toggleShowFaves}
+          faveBooksLength={faveBookIds.length}
+        />
       </Header>
       <BooksContainer
         books={displayBooks}

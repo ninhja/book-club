@@ -1,8 +1,19 @@
 import React, { useRef, useState } from 'react'
-import { SearchContainer, Input, Icon, Wrapper } from './styles'
-import { Close } from '../../styles.js'
+import { SearchContainer, Input, Icon, Wrapper, FaveButtonContainer, Counter } from './styles'
+import { Close, Button } from '../../styles.js'
 
-const Search = ({ filterBooks }) => {
+const FaveButton = ({ showFaves, toggleShowFaves, faveBooksLength }) => {
+  return (
+    <FaveButtonContainer>
+      <Counter>{faveBooksLength}</Counter>
+      <Button onClick={toggleShowFaves} $hasEmoji={false} $inHeader={true}>
+        {showFaves ? 'Hide faves' : 'Show faves'}
+      </Button>
+    </FaveButtonContainer>
+  )
+}
+
+const Search = ({ filterBooks, showFaves, toggleShowFaves, faveBooksLength }) => {
   const inputEl = useRef(null)
   const [showOnDesktop, setShowOnDesktop] = useState(false)
 
@@ -23,6 +34,11 @@ const Search = ({ filterBooks }) => {
 
   return (
     <Wrapper>
+      <FaveButton
+        showFaves={showFaves}
+        toggleShowFaves={toggleShowFaves}
+        faveBooksLength={faveBooksLength}
+      />
       <SearchContainer $showOnDesktop={showOnDesktop}>
         <Icon onClick={showSearch} />
         <Input ref={inputEl} type="text" name="search" autoComplete="off" onChange={handleChange} />

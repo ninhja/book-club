@@ -50,3 +50,22 @@ export const Close = styled.button`
     transform: rotate(-45deg);
   }
 `
+
+export const Button = styled.button`
+  display: block;
+  border: 2px solid #000;
+  border-radius: 30px;
+  font-family: 'Work Sans', sans-serif;
+  font-size: 18px;
+  background-color: transparent;
+  cursor: pointer;
+  padding: 8px;
+  padding-top: ${({ $hasEmoji }) => ($hasEmoji ? '6px' : '8px')};
+  margin-bottom: ${({ $inHeader }) => ($inHeader ? '0px' : '8px')};
+  width: ${({ $inHeader }) => ($inHeader ? '140px' : 'auto')};
+
+  @media (max-width: 1000px) {
+    width: ${({ $inHeader }) => ($inHeader ? '110px' : 'auto')};
+    font-size: 14px;
+  }
+`
